@@ -1,7 +1,7 @@
 // client1.js
 
 var mqtt    = require('mqtt');
-var client  = mqtt.connect('mqtt://localhost');
+var client  = mqtt.connect('mqtt://localhost',{port:1883});
  
 client.on('connect', function () {
   client.subscribe('presence');
