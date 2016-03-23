@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Beckhoff telemetry input</title>
+
+	<style type="text/css">
+
+	* { margin: 0; padding: 0; box-sizing: border-box; }
+
+	table{
+		width: 100%;
+		align-self: center;
+		margin: 0; padding: 0;
+	}
+
+
+	tr, th, td{
+		border: 1px solid pink;
+		margin: 0; padding: 0;
+	}
+
+	th{
+		background: pink;
+		width:50%;
+		margin: 0; padding: 0;
+	}
+	button{
+		width: 100%;
+		display: inline-block;
+		margin: 0; padding: 0;
+	}
+	</style>
+
+</head>
+<body>
+
+<h1>Beckhoff Telemetry Input</h1>
+<table>
+	<tr>
+		<th>variable</th>
+		<th>value</th>
+	</tr>
+	<tr>
+		<td id="bvar">boolVal</td>
+		<td id="bval">hey</td>
+	</tr>
+	<tr>
+		<td id="ivar">intVal</td>
+		<td id="ival">hey</td>
+	</tr>
+</table>
+<div>
+<button id="on">ON</button>
+<button id="off">OFF</button>
+</div>
+<div id="myChart" style="height:400px;width:700px; "></div>
+
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+<script src="../jquery/jquery.js"></script>
+<script type="text/javascript" src="../jqPlot/jquery.jqplot.js"></script>
+<script type="text/javascript" src="../jqPlot/plugins/jqplot.json2.js"></script>
+<script type="text/javascript" src="../jqPlot/plugins/jqplot.dateAxisRenderer.js"></script>
+<link rel="stylesheet" type="text/css" href="../jqPlot/jquery.jqplot.css" />
+<script type="text/javascript">
+
+	$(document).ready(function () {
+		 /* body... */ 
+	
+	function datastruct(){
+	this.boolVal='';
+    this.intVal='';
+    this.dintVal='';
+    this.sintVal='';
+    this.lrealVal='';
+    this.realVal='';
+    this.stringVal='';
+
+	}
+
+	function tags(){
+		this.val='';
+	} 
+
+	var obj = new datastruct();
+	var tag = new tags();
+	var data = [];
+	//var obj2 = new datastruct();
+	var socket = io();
+
+	
+
+	// var ajaxDataRenderer = function(url, plot, options) {
+	//       return data;
+	//   };
+	// var plot2 = $.jqplot('chartdiv', "jsonurl",{
+	//     title: "AJAX JSON Data Renderer",
+	//     dataRenderer: ajaxDataRenderer,
+	//     });
+
+	   var t = 1000;
+	   var x = (new Date()).getTime(); // current time
+	   var n = 100;
+	   data = [];
+	   for(i=0; i<n; i++){  
+	      data.push([x - (n-1-i)*t,0]);  
+	   }   
+
+
+	   var options = {      
+	      axes: {   	    
+	         xaxis: {   	   	   
+	            numberTicks: 8,            
+	            renderer:$.jqplot.DateAxisRenderer,           
+	            tickOptions:{formatString:'%H:%M:%S'},            
+	            min : data[0][0],           
+	            max: data[data.length-1][0] 	   
+	         }, 	    
+	         yaxis: {
+	            min:0, 
+	            max: 100,
+	            numberTicks: 6,   	        
+	            tickOptions:{formatString:'%.1f'}  	    
+	         }      
+	      },      
+	      seriesDefaults: {   	    
+	         rendererOptions: { smooth: true}      
+	      }  
+	   };  
+	 
+	   var plot1 = $.jqplot ('myChart', [data],options); 
+	 
+	   // $('button').click( function(){        
+	   //    doUpdate();      
+	   //    $(this).hide();  
+	   // });
+	 
+	   function doUpdate() {      
+	      // if(data.length > n-1){
+	      //    data.shift();
+	      // }
+	      //var y = Math.random();
+	      //var x = (new Date()).getTime();
+	      //data.push([x,y]);
+	      if (plot1) {
+	    	plot1.destroy();
+	      }
+	      plot1.series[0].data = data; 
+	      options.axes.xaxis.min = data[0][0];
+	      options.axes.xaxis.max = data[data.length-1][0];
+	      plot1 = $.jqplot ('myChart', [data],options);
+	      //setTimeout(doUpdate, t);
+	   }
+
+
+		socket.on('plc_input',function (msg) {
+			 /* body... */ 
+			 //obj2 = JSON.parse("msg");
+			obj = msg;
+			$('#bval').text(obj.boolVal.toString());
+			$('#ival').text(obj.intVal.toString());
+			// data[0].push([$.now(),obj.intVal])
+			// if(data[0].length > 100)
+			// {	
+			// 	data[0].shift();
+			// }
+			// plot2.destroy();
+			// plot2 = $.jqplot('chartdiv', "jsonurl",{
+		 //    title: "AJAX JSON Data Renderer",
+		 //    dataRenderer: ajaxDataRenderer,
+		 //    });
+
+		   if(data.length > n-1){
+	          data.shift();
+	       }
+	      var y = obj.intVal;
+	      var x = (new Date()).getTime();
+	      data.push([x,y]);
+	      doUpdate();
+
+
+
+
+
+
+		})
+
+		$('#on').on('click',function () {
+			 /* body... */ 
+			 tag.val = true;
+			 socket.emit('bVal', tag);
+		})
+
+		$('#off').on('click',function () {
+			 /* body... */ 
+			 tag.val = false;
+			 socket.emit('bVal', tag);
+		})
+	})
+
+
+
+</script>
+
+</body>
+</html>
