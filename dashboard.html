@@ -1,0 +1,451 @@
+<!-- dashboard.html -->
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Iot Dashboard</title>
+
+
+ 	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+	<script src="../jquery/jquery.js"></script>
+	<script type="text/javascript" src="../jqPlot/jquery.jqplot.js"></script>
+	<script type="text/javascript" src="../jqPlot/plugins/jqplot.json2.js"></script>
+	<script type="text/javascript" src="../jqPlot/plugins/jqplot.dateAxisRenderer.js"></script>
+	<link rel="stylesheet" type="text/css" href="../jqPlot/jquery.jqplot.css" />
+	<link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap-theme.min.css">
+	<script type="text/javascript" src="../bootstrap/js/bootstrap.min.js"></script>
+
+	<style type="text/css">
+		.widget-row{
+			heigth:100%;
+			background: #b3b3b3;
+		}
+
+		body{
+			background-color: black;
+		}
+
+		.divstyle{
+			border-radius: 5px 5px 5px 5px;
+			-moz-border-radius: 5px 5px 5px 5px;
+			-webkit-border-radius: 5px 5px 5px 5px;
+			border: 0px solid #000000;
+			background-color: #969696;
+			margin: 5px;
+		}
+
+		table{
+			width: 100%;
+			/*margin: 3px;*/
+			/*margin-right: 3px;*/
+		}
+		tr{
+			height: 50px;
+			border-top: 1px solid white;
+		}
+		td{
+			width: 50%;
+			/*margin: 2px;*/
+			padding-left: 5px;
+		}
+
+		.green{
+			background-color: green;
+		}
+
+		.red{
+			background-color: red;
+		}
+	</style>
+</head>
+<body>
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-4"> 
+        <div class="col-md-12 divstyle"> 
+        	<h1 style="text-align: center;">System Status</h1>
+        	<table>
+        		<tr>
+        			<td>
+        				Emergency Button:
+        			</td>
+        			<td id="emergencybutton">
+        				System Operational
+        			</td>
+        		</tr>
+        		<tr>
+        			<td>
+        				I/O link Status:
+        			</td>
+        			<td id="linkstatus">
+        				Connected
+        			</td>
+        		</tr>
+        		<tr>
+        			<td>
+        				Mode:
+        			</td>
+        			<td id="mode-text-panel">
+        				Auto
+        			</td>
+        		</tr>
+        		<tr>
+        			<td id="tempreading">
+        				Temperature is 35c:
+        			</td>
+        			<td id="temp">
+        				Temperature Within Limit
+        			</td>
+        		</tr>
+        	</table>
+        </div>
+        </div>
+        <div class="col-md-4"> 
+        <div class="col-md-12 divstyle">
+        	<h1 style="text-align: center;">Tank Level</h1>
+        	<table>
+        		<tr>
+        			<td id="toplevel" style="text-align: center;">
+        				Top Level
+        			</td>
+        		</tr>
+        		<tr>
+        			<td id="midlevel" style="text-align: center; background-color: green;">
+        				Mid Level
+        			</td>
+        		</tr>
+        		<tr>
+        			<td id="bottomlevel" style="text-align: center;">
+        				Bottom Level
+        			</td>
+        		</tr>
+        		<tr>
+        			<td id="level" style="text-align: center;">
+        				Tank Level: 0%
+        			</td>
+        		</tr>
+        	</table>
+        </div>
+        </div>
+        <div class="col-md-4"> 
+        <div class="col-md-12 divstyle">
+        	<h1 style="text-align: center;">Control Panel</h1>
+        	<table>
+        		<tr>
+        			<td id="mode-text">
+        				Auto Mode
+        			</td>
+        			<td>
+        				<div class="btn-group" role="group" aria-label="...">
+						  <button type="button" class="btn btn-default" id="on_auto">Auto</button>
+						  <button type="button" class="btn btn-default" id="off_auto">Manual</button>
+						</div>
+        			</td>
+        		</tr>
+        		<tr>
+        			<td id="pump1-text">
+        				Pump 1 On
+        			</td>
+        			<td>
+        				<div class="btn-group" role="group" aria-label="...">
+						  <button type="button" class="btn btn-default" id="start_pump_1">Start</button>
+						  <button type="button" class="btn btn-default" id="stop_pump_1">Stop</button>
+						</div>
+        			</td>
+        		</tr>
+        		<tr>
+        			<td id="pump2-text">
+        				Pump 2 On
+        			</td>
+        			<td>
+        				<div class="btn-group" role="group" aria-label="...">
+						  <button type="button" class="btn btn-default" id="start_pump_2">Start</button>
+						  <button type="button" class="btn btn-default" id="stop_pump_2">Stop</button>
+						</div>
+        			</td>
+        		</tr>
+        		<tr>
+        			<td id="temp-text">
+        				Alarm at 35C
+        			</td>
+        			<td>
+        				<div class="input-group">
+					      <input type="text" class="form-control" id="templimit" placeholder="Temp">
+					      <span class="input-group-btn">
+					        <button class="btn btn-default glyphicon glyphicon-upload" id="templimitsubmit" type="button"></button>
+					      </span>
+					    </div><!-- /input-group -->
+        			</td>
+        		</tr>
+        	</table>
+        </div>
+    </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+        <div class="col-md-12 divstyle" style="height:100%;width:100%;" >
+        	<div id="tankLevel" style="min-height:340px;height:100%;width:100%; "></div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+$(document).ready(function () {
+	 /* body... */ 
+
+	 function inputs () {
+	 	 // body...  
+	 	 this.bEmergency = false;
+	 	 this.bIOTerm	=	false;
+	 	 this.rTemp = 0.0;
+	 	 this.bTemp = false;	 	 
+	 	 this.bFloat1 = false;
+	 	 this.bfloat2 = false;
+	 	 this.bfloat3 = false;
+	 	 this.rTankLevel = 0.0;
+	 	 this.bPump1 = false;
+	 	 this.bPump2 = false;
+	 	 this.bAuto = false;
+	 	 this.rTempLimit = 0.0;
+	 	 // this.syncUpdate = 0;
+	 };
+
+	 function outputs () {
+	 	 // body... 
+	 	 this.bPump1 = false;
+	 	 this.bPump2 = false;
+	 	 this.bAuto = false;
+	 	 this.rTempLimit = 0.0;
+	 };
+
+	 function tags () {
+	 	 // body...  
+	 	 this.val = '';
+	 };
+
+	 var input = new inputs();
+	 // var output = new outputs();
+
+	 var bPump1 = new tags();
+	 var bPump2 = new tags();
+	 var bAuto = new tags();
+	 var rTempLimit = new tags();
+
+
+	 // chart side
+
+	var t = 1000;
+	var x = (new Date()).getTime(); // current time
+	var n = 10;
+	chart_data = [];
+	for(i=0; i<n; i++)
+	{  
+	    chart_data.push([x - (n-1-i)*t,0]);  
+	}   
+
+
+	var options = {      
+	  axes: {   	    
+	     xaxis: {   	   	   
+	        numberTicks: 8,            
+	        renderer:$.jqplot.DateAxisRenderer,           
+	        tickOptions:{formatString:'%H:%M:%S'},            
+	        min : chart_data[0][0],           
+	        max: chart_data[chart_data.length-1][0] 	   
+	     }, 	    
+	     yaxis: {
+	        min:0, 
+	        max: 100,
+	        numberTicks: 6,   	        
+	        tickOptions:{formatString:'%.1f'}  	    
+	     }      
+	  },      
+	  seriesDefaults: {   	    
+	     rendererOptions: { smooth: true}      
+	  }  
+	};  
+	 
+	var plot1 = $.jqplot ('tankLevel', [chart_data],options); 
+
+	// $('button').click( function(){        
+	//    doUpdate();      
+	//    $(this).hide();  
+	// });
+	 
+	function doUpdate(data) {      
+
+	if (plot1) {
+		plot1.destroy();
+	}
+	plot1.series[0].data = data; 
+	options.axes.xaxis.min = data[0][0];
+	options.axes.xaxis.max = data[data.length-1][0];
+	plot1 = $.jqplot ('tankLevel', [data],options);
+	//setTimeout(doUpdate, t);
+	}
+
+
+	// socket side
+	 var socket = io();
+
+	 socket.on('table_data',function (msg) {
+	 	 /* body... */
+	     doUpdate(msg);
+
+	 })
+
+	 socket.on('plc_input',function (msg) {
+	 	 /* body... */ 
+	 	 input = msg;
+
+	 	 // system status
+
+	 	 if(input.bEmergency == true){
+	 	 	$('#emergencybutton').css("background-color","red");
+	 	 	$('#emergencybutton').text("System Halted");
+	 	 }else {
+	 	 	$('#emergencybutton').css("background-color","green");
+	 	 	$('#emergencybutton').text("System Operational");
+	 	 }
+
+	 	 if(input.bIOTerm == true){
+	 	 	$('#linkstatus').css("background-color","green");
+	 	 	$('#linkstatus').text("IO Link OK");
+	 	 }else {
+	 	 	$('#linkstatus').css("background-color","red");
+	 	 	$('#linkstatus').text("IO Link Breakdown");
+	 	 }
+
+	 	 if(input.bAuto == true){
+	 	 	$('#mode-text-panel').css("background-color","green");
+	 	 	$('#mode-text-panel').text("Auto Mode");
+	 	 }else {
+	 	 	$('#mode-text-panel').css("background-color","red");
+	 	 	$('#mode-text-panel').text("Manual Mode");
+	 	 }
+
+	 	 if(input.bTemp == true){
+	 	 	$('#temp').css("background-color","red");
+	 	 	$('#temp').text("Overtemperature");
+	 	 }else {
+	 	 	$('#temp').css("background-color","green");
+	 	 	$('#temp').text("Temp Within Level");
+	 	 }
+
+	 	 $('#tempreading').text("Tank Temperature: " + input.rTemp.toString() + 'c');
+	 	 console.log(input.rTemp.toString());
+
+
+	 	 // tank level
+
+	 	 if(input.bFloat1 == true){
+	 	 	$('#bottomlevel').css("background-color","green");
+	 	 }else {
+	 	 	$('#bottomlevel').css("background-color","grey");
+	 	 }
+
+	 	 if(input.bFloat2 == true){
+	 	 	$('#midlevel').css("background-color","green");
+	 	 }else {
+	 	 	$('#midlevel').css("background-color","grey");
+	 	 }
+
+	 	 if(input.bFloat3 == true){
+	 	 	$('#toplevel').css("background-color","green");
+	 	 }else {
+	 	 	$('#toplevel').css("background-color","grey");
+	 	 }
+
+	 	 $('#level').text("Tank Level: " + input.rTankLevel.toString() + '%');
+
+
+	 	 //Control Panel
+
+	 	 if(input.bAuto == true){
+	 	 	$('#mode-text').text("Auto Mode");
+	 	 }else {
+	 	 	$('#mode-text').text("Manual Mode");
+	 	 }
+
+	 	 if(input.bPump1 == true){
+	 	 	$('#pump1-text').text("Pump 1 On");
+	 	 }else {
+	 	 	$('#pump1-text').text("Pump 1 Off");
+	 	 }
+
+	 	 if(input.bPump2 == true){
+	 	 	$('#pump2-text').text("Pump 2 On");
+	 	 }else {
+	 	 	$('#pump2-text').text("Pump 2 Off");
+	 	 }
+
+	 	 $('#temp-text').text("Temp Alarm: " + input.rTempLimit.toString() + 'c');
+
+	 })
+
+
+
+	$('#on_auto').on('click',function () {
+		 /* body... */ 
+		 bAuto.val = true;
+		 socket.emit('bAuto', bAuto);
+	});
+
+	$('#off_auto').on('click',function () {
+		 /* body... */ 
+		 bAuto.val = false;
+		 socket.emit('bAuto', bAuto);
+	});
+
+
+
+	$('#start_pump_1').on('click',function () {
+		 /* body... */ 
+		 bPump1.val = true;
+		 socket.emit('bPump1', bPump1);
+	});
+
+	$('#stop_pump_1').on('click',function () {
+		 /* body... */ 
+		 bPump1.val = false;
+		 socket.emit('bPump1', bPump1);
+	});
+
+
+
+	$('#start_pump_2').on('click',function () {
+		 /* body... */ 
+		 bPump2.val = true;
+		 socket.emit('bPump2', bPump2);
+	});
+
+	$('#stop_pump_2').on('click',function () {
+		 /* body... */ 
+		 bPump2.val = false;
+		 socket.emit('bPump2', bPump2);
+	});
+
+
+
+	$('#templimitsubmit').on('click',function () {
+		 /* body... */ 
+
+		 var num = $('#templimit').val();
+		 if(!isNaN(num))
+		 {
+		 	rTempLimit.val = parseFloat(num);
+		 	socket.emit('rTempLimit', rTempLimit);
+		 }
+	});
+
+});
+
+
+
+
+
+</script>
+
+</body>
+</html>
