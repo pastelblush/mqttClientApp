@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Iot Dashboard</title>
+	<title>Beckhoff Iot Dashboard</title>
 
 
  	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
@@ -22,16 +22,22 @@
 		}
 
 		body{
-			background-color: black;
+			background-color: #ebebe0;
 		}
 
 		.divstyle{
-			border-radius: 5px 5px 5px 5px;
-			-moz-border-radius: 5px 5px 5px 5px;
-			-webkit-border-radius: 5px 5px 5px 5px;
+			border-radius: 2px 2px 2px 2px;
+			-moz-border-radius: 2px 2px 2px 2px;
+			-webkit-border-radius: 2px 2px 2px 2px;
 			border: 0px solid #000000;
 			background-color: #969696;
 			margin: 5px;
+			opacity: 0.8;
+    		filter: alpha(opacity=80)
+
+    		-moz-box-shadow: 0 0 5px #fff;
+			-webkit-box-shadow: 0 0 5px #fff;
+			box-shadow: 0px 0px 5px #fff; 
 		}
 
 		table{
@@ -194,6 +200,11 @@
 $(document).ready(function () {
 	 /* body... */ 
 
+
+	function isNumeric(n) {
+		return !isNaN(parseFloat(n)) && isFinite(n);
+	}
+
 	 function inputs () {
 	 	 // body...  
 	 	 this.bEmergency = false;
@@ -301,35 +312,36 @@ $(document).ready(function () {
 
 	 	 // system status
 
-	 	 if(input.bEmergency == true){
-	 	 	$('#emergencybutton').css("background-color","red");
+	 	 if(input.bEmergency == false){
+	 	 	$('#emergencybutton').css("background-color","#ff1a1a");
 	 	 	$('#emergencybutton').text("System Halted");
 	 	 }else {
-	 	 	$('#emergencybutton').css("background-color","green");
+	 	 	$('#emergencybutton').css("background-color","#00ff00");
 	 	 	$('#emergencybutton').text("System Operational");
 	 	 }
 
-	 	 if(input.bIOTerm == true){
-	 	 	$('#linkstatus').css("background-color","green");
+	 	 if(input.bIOTerm == false){
+	 	 	$('#linkstatus').css("background-color","#00ff00");
 	 	 	$('#linkstatus').text("IO Link OK");
 	 	 }else {
-	 	 	$('#linkstatus').css("background-color","red");
+	 	 	$('#linkstatus').css("background-color","#ff1a1a");
 	 	 	$('#linkstatus').text("IO Link Breakdown");
 	 	 }
 
 	 	 if(input.bAuto == true){
-	 	 	$('#mode-text-panel').css("background-color","green");
+	 	 	$('#mode-text-panel').css("background-color","#00ff00");
 	 	 	$('#mode-text-panel').text("Auto Mode");
-	 	 }else {
-	 	 	$('#mode-text-panel').css("background-color","red");
+	 	 }
+	 	 else {
+	 	 	$('#mode-text-panel').css("background-color","grey");
 	 	 	$('#mode-text-panel').text("Manual Mode");
 	 	 }
 
 	 	 if(input.bTemp == true){
-	 	 	$('#temp').css("background-color","red");
+	 	 	$('#temp').css("background-color","#ff1a1a");
 	 	 	$('#temp').text("Overtemperature");
 	 	 }else {
-	 	 	$('#temp').css("background-color","green");
+	 	 	$('#temp').css("background-color","#00ff00");
 	 	 	$('#temp').text("Temp Within Level");
 	 	 }
 
@@ -340,19 +352,19 @@ $(document).ready(function () {
 	 	 // tank level
 
 	 	 if(input.bFloat1 == true){
-	 	 	$('#bottomlevel').css("background-color","green");
+	 	 	$('#bottomlevel').css("background-color","#00ff00");
 	 	 }else {
 	 	 	$('#bottomlevel').css("background-color","grey");
 	 	 }
 
 	 	 if(input.bFloat2 == true){
-	 	 	$('#midlevel').css("background-color","green");
+	 	 	$('#midlevel').css("background-color","#00ff00");
 	 	 }else {
 	 	 	$('#midlevel').css("background-color","grey");
 	 	 }
 
 	 	 if(input.bFloat3 == true){
-	 	 	$('#toplevel').css("background-color","green");
+	 	 	$('#toplevel').css("background-color","#00ff00");
 	 	 }else {
 	 	 	$('#toplevel').css("background-color","grey");
 	 	 }
@@ -364,28 +376,74 @@ $(document).ready(function () {
 
 	 	 if(input.bAuto == true){
 	 	 	$('#mode-text').text("Auto Mode");
+	 	 	$('#on_auto').attr('class','btn btn-success');
+	 	 	$('#off_auto').attr('class','btn btn-default');
 	 	 }else {
 	 	 	$('#mode-text').text("Manual Mode");
+	 	 	$('#on_auto').attr('class','btn btn-default');
+	 	 	$('#off_auto').attr('class','btn btn-success');
 	 	 }
 
 	 	 if(input.bPump1 == true){
 	 	 	$('#pump1-text').text("Pump 1 On");
+	 	 	$('#start_pump_1').attr('class','btn btn-success');
+	 	 	$('#stop_pump_1').attr('class','btn btn-default');
 	 	 }else {
 	 	 	$('#pump1-text').text("Pump 1 Off");
+	 	 	$('#start_pump_1').attr('class','btn btn-default');
+	 	 	$('#stop_pump_1').attr('class','btn btn-warning');
 	 	 }
 
 	 	 if(input.bPump2 == true){
 	 	 	$('#pump2-text').text("Pump 2 On");
+	 	 	$('#start_pump_2').attr('class','btn btn-success');
+	 	 	$('#stop_pump_2').attr('class','btn btn-default');
 	 	 }else {
 	 	 	$('#pump2-text').text("Pump 2 Off");
+	 	 	$('#start_pump_2').attr('class','btn btn-default');
+	 	 	$('#stop_pump_2').attr('class','btn btn-warning');
 	 	 }
 
 	 	 $('#temp-text').text("Temp Alarm: " + input.rTempLimit.toString() + 'c');
 
 	 })
+	 setInterval(function () {
+	 	 /* body... */ 
+	 	if(input.bEmergency == false){
+	 	$('#start_pump_1').attr('disabled','disabled');
+ 	 	$('#start_pump_2').attr('disabled','disabled');
+ 	 	$('#stop_pump_1').attr('disabled','disabled');
+ 	 	$('#stop_pump_2').attr('disabled','disabled');
+ 	 	$('#on_auto').attr('disabled','disabled');
+ 	 	$('#off_auto').attr('disabled','disabled');
+ 	 	$('#templimit').attr('disabled','disabled');
+ 	 	$('#templimitsubmit').attr('disabled','disabled');
+		}else{
+ 		$('#start_pump_1').removeAttr('disabled');
+ 	 	$('#start_pump_2').removeAttr('disabled');
+ 	 	$('#stop_pump_1').removeAttr('disabled');
+ 	 	$('#stop_pump_2').removeAttr('disabled');
+ 	 	$('#on_auto').removeAttr('disabled');
+ 	 	$('#off_auto').removeAttr('disabled');
+ 	 	$('#templimit').removeAttr('disabled');
+ 	 	$('#templimitsubmit').removeAttr('disabled');
+ 	 	if(input.bAuto == true){
+ 	 		$('#start_pump_1').attr('disabled','disabled');
+	 	 	$('#start_pump_2').attr('disabled','disabled');
+	 	 	$('#stop_pump_1').attr('disabled','disabled');
+	 	 	$('#stop_pump_2').attr('disabled','disabled');
+ 	 	}else{
+ 	 		$('#start_pump_1').removeAttr('disabled');
+	 	 	$('#start_pump_2').removeAttr('disabled');
+	 	 	$('#stop_pump_1').removeAttr('disabled');
+	 	 	$('#stop_pump_2').removeAttr('disabled');
+ 	 	}
 
 
+	 }
 
+	 }, 100);
+	 
 	$('#on_auto').on('click',function () {
 		 /* body... */ 
 		 bAuto.val = true;
@@ -432,7 +490,7 @@ $(document).ready(function () {
 		 /* body... */ 
 
 		 var num = $('#templimit').val();
-		 if(!isNaN(num))
+		 if(isNumeric(num))
 		 {
 		 	rTempLimit.val = parseFloat(num);
 		 	socket.emit('rTempLimit', rTempLimit);
